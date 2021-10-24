@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -14,7 +15,7 @@ import com.example.demo.entities.User;
 import com.example.demo.service.UserService;
 
 @Service
-public class MyUserDetailsService {
+public class MyUserDetailsService implements UserDetailsService {
 	
 	@Autowired
 	UserService userService;

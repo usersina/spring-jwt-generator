@@ -25,6 +25,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 	private AuthenticationManager authenticationManager;
 	
 	public JWTAuthenticationFilter(AuthenticationManager authenticationManager) {
+		super();
 		this.authenticationManager = authenticationManager;
 	}
 	
@@ -45,6 +46,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 	@Override
 	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
 			Authentication authResult) throws IOException, ServletException {
+		System.out.println("Successfull auth!");
 		org.springframework.security.core.userdetails.User springUser = (org.springframework.security.core.userdetails.User) authResult.getPrincipal();
 		List<String> roles = new ArrayList<>();
 		springUser.getAuthorities().forEach(authority -> {
@@ -53,8 +55,8 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 		String jwt = JWT.create()
 				.withSubject(springUser.getUsername())
 				.withArrayClaim("roles", roles.toArray(new String[roles.size()]))
-				.withExpiresAt(new Date(System.currentTimeMillis() + 10*24*60*60*1000))
-				.sign(Algorithm.HMAC256("sina@email.com"));
+				.withExpiresAt(new Date(System.currentTimeMillis() + SecurityParams.EXP_TIME))
+				.sign(Algorithm.HMAC256(SecurityParams.SECRET));
 		response.addHeader("Authorization", jwt);
 	}
 }
