@@ -27,24 +27,36 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
+		response.addHeader("Access-Control-Allow-Origin", "*");
+		response.addHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE");
+		response.addHeader("Access-Control-Allow-Headers",
+				"Access-Control-Allow-Headers,Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method,Access-Control-Request-Headers, Authorization");
+		response.addHeader("Access-Control-Expose-Headers",
+				"Authorization,Access-Control-Allow-Origin,Access-Control-Allow-Credentials ");
+
+		if (request.getMethod().equals("OPTIONS")) {
+			response.setStatus(HttpServletResponse.SC_OK);
+		}
+
 		String jwt = request.getHeader("Authorization");
-		if(jwt == null || !jwt.startsWith(SecurityParams.PREFIX)) {
+		if (jwt == null || !jwt.startsWith(SecurityParams.PREFIX)) {
 			filterChain.doFilter(request, response);
 			return;
 		}
-		
+
 		JWTVerifier verifier = JWT.require(Algorithm.HMAC256(SecurityParams.SECRET)).build();
 		jwt = jwt.substring(SecurityParams.PREFIX.length());
-		
-		DecodedJWT decodedJWT = verifier.verify(jwt);	
+
+		DecodedJWT decodedJWT = verifier.verify(jwt);
 		String username = decodedJWT.getSubject();
 		List<String> roles = decodedJWT.getClaims().get("roles").asList(String.class);
-	
+
 		Collection<GrantedAuthority> authorities = new ArrayList<>();
-		for(String r: roles)
+		for (String r : roles)
 			authorities.add(new SimpleGrantedAuthority(r));
-		
-		UsernamePasswordAuthenticationToken user = new UsernamePasswordAuthenticationToken(username, roles, authorities);
+
+		UsernamePasswordAuthenticationToken user = new UsernamePasswordAuthenticationToken(username, roles,
+				authorities);
 		SecurityContextHolder.getContext().setAuthentication(user);
 		filterChain.doFilter(request, response);
 	}
